@@ -3,37 +3,41 @@ import "./Contact.css";
 import emailjs from "@emailjs/browser";
 import { useContext } from "react";
 import { themeContext } from "../../Context";
+import validator from "validator";
 
 const Contact = () => {
   const form = useRef();
   const theme = useContext(themeContext);
   const darkMode = theme.state.darkMode;
 
-  const [Done, setDone] = useState(false);
+  const [Done, setDone] = useState("invalid");
   const [Fields, setFields] = useState({ user: "", mail: "", msg: "" });
   const clear = (event) => {
     setFields({ ...Fields, [event.target.name]: event.target.value });
   };
   const sendEmail = (e) => {
     e.preventDefault();
-
-    emailjs
-      .sendForm(
-        "service_uqwqo7k",
-        "template_h689kl7",
-        form.current,
-        "bxQgI47wnaAjr2Ifu"
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          setDone(true);
-          setFields({ user: "", mail: "", msg: "" });
-        },
-        (error) => {
-          console.log(error.text);
-        }
-      );
+    if (validator.isEmail(Fields.mail)) {
+      emailjs
+        .sendForm(
+          "service_uqwqo7k",
+          "template_h689kl7",
+          form.current,
+          "bxQgI47wnaAjr2Ifu"
+        )
+        .then(
+          (result) => {
+            console.log(result.text);
+            setDone(true);
+            setFields({ user: "", mail: "", msg: "" });
+          },
+          (error) => {
+            console.log(error.text);
+          }
+        );
+    } else {
+      setDone(false);
+    }
   };
 
   return (
@@ -52,6 +56,7 @@ const Contact = () => {
         <div className='c-right'>
           <form ref={form} onSubmit={sendEmail}>
             <input
+              required
               onChange={clear}
               type='text'
               name='user'
@@ -60,6 +65,7 @@ const Contact = () => {
               placeholder='Name'
             />
             <input
+              required
               type='email'
               name='mail'
               className='user'
@@ -68,6 +74,7 @@ const Contact = () => {
               onChange={clear}
             />
             <textarea
+              required
               onChange={clear}
               name='msg'
               className='user'
@@ -75,7 +82,15 @@ const Contact = () => {
               placeholder='Message'
             />
             <input type='submit' value='Send' className='button' />
-            <span>{Done && "Thanks for contacting me!"}</span>
+            <span>
+              {Done === true ? (
+                "Thanks for contacting me"
+              ) : Done === false ? (
+                <h3 style={{ color: "red" }}>Email format is not right</h3>
+              ) : (
+                ""
+              )}
+            </span>
             <div
               className='blur c-blur1'
               style={{ background: "var(--purple)" }}
